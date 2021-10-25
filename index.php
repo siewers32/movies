@@ -1,7 +1,21 @@
 <?php
+session_start();
 // Load config
 $config = parse_ini_file('conf.ini');
 $config['webroot'] = __DIR__;
+
+// Setup database connection
+$dbc = new PDO("mysql:host=".$config['db']['host'].";port=".$config['db']['port'].";dbname=" .$config['db']['dbname'],
+        $config['db']['user'], $config['db']['password']);
+
+// Setup dependency container
+$dc = array(
+    'dbc' => $dbc,
+    'config' => $config
+);
+
+// Functions
+include('functions.php');
 
 // Initialize
 $html['title'] = "Movie top 10";
@@ -11,28 +25,31 @@ $html['footer'] = "Copyright &copy; Movie top 10 - 2021";
 
 // Navigation
 $links = array(
-    array('href' => '/index.php', 'title' => 'Home'),
-    array('href' => '/register.php', 'title' => 'Become a member')
+    array('href' => '/index.php?p=show', 'title' => 'Home'),
+    array('href' => '/index.php?p=register', 'title' => 'Become a member'),
+    array('href' => '/index.php?p=login', 'title' => 'Login'),
+    array('href' => '/index.php?p=logout', 'title' => 'Logout'),
 );
 
-foreach($links as $link) {
-    $html['nav'] .= "<a href='".$link['href']."'>".$link['title']."<a>";
-}
 
 // Main
-$dbc = new PDO("mysql:host=".$config['db']['host'].";port=".$config['db']['port'].";dbname=" .$config['db']['dbname'],
-    $config['db']['user'], $config['db']['password']);
-$query = $dbc->prepare("select * from movie");
-$query->execute();
-$movies = $query->fetchAll(PDO::FETCH_ASSOC);
+$pages = array (
+    "show",
+    "register",
+    "detail",
+    "login",
+    "logout"
+);
 
-foreach($movies as $movie) {
-    $html['main'] .= "<h3>".$movie['title']."</h3>"
-        ."<p>".$movie['year']."</p>"
-        ."<img src='".$config['images']."/".$movie['picture']."'>";
-
+if(isset($_GET['p']) && in_array($_GET['p'], $pages)) {
+    $html['main'] = $_GET['p']($dc);
+} else {
+    include('show.php');
 }
 
-var_dump($config);
+
+
+
+$html['nav'] = getNavigationBar($links);
 
 include('layout.php');

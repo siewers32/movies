@@ -1,0 +1,29 @@
+html {
+    font-family: 'Roboto', sans-serif;
+    font-size:16px;
+}
+
+img {
+    width:256px;
+}
+
+div.stars {
+    display: flex;
+    width: 180px;
+    justify-content: space-between;
+}
+div.star {
+    width:30px;
+    height:30px;
+}
+
+div.star::before {
+    content: '\2606';
+    font-size: 1.5rem;
+    color: orange;
+}
+
+div.closed::before {
+    content: '\2605';
+    color: orange;
+}
