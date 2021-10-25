@@ -7,15 +7,24 @@ img {
     width:256px;
 }
 
-div.stars {
+div.stars, div.stars_reverse {
     display: flex;
     width: 180px;
     justify-content: space-between;
 }
+
+div.stars_reverse {
+    flex-direction: row-reverse;
+}
+
 div.star {
     width:30px;
     height:30px;
+    margin:0px;
+    padding:0px;
 }
+
+
 
 div.star::before {
     content: '\2606';
@@ -26,4 +35,71 @@ div.star::before {
 div.closed::before {
     content: '\2605';
     color: orange;
+}
+
+.rate:before {
+    width: 15px;
+    height: 15px;
+    border-radius: 15px;
+    top: -3px;
+    left: -1px;
+    position: relative;
+    background-color: white;
+    content: '';
+    display: inline-block;
+    visibility: visible;
+    border: 2px solid white;
+}
+
+
+.rate:after {
+    content: '\2606';
+    font-size: 1.5rem;
+    position:relative;
+    top:-1.5rem;
+    left: -3px;
+    color: orange;
+    margin:0px;
+    padding:0px;
+
+}
+
+input:hover ~ .rate:after {
+    content: '\2605';
+}
+
+.rate:hover::after {
+    content: '\2605';
+}
+
+input:checked ~ .rate:after {
+    content: '\2605';
+    color: orange;
+}
+
+.rate:checked::after {
+    content: '\2605';
+}
+
+label {
+    display:none;
+}
+
+
+form {
+    margin-bottom: 100px;
+}
+
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px; /* Preferred icon size */
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
 }

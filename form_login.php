@@ -9,5 +9,4 @@ return function($action, $method="post", $data=[]) {
     <input type="submit">
 </form>
 EOT;
-}
-?>
+};

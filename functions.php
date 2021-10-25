@@ -28,15 +28,15 @@ function getNavigationBar($links) {
 
 function makeStars($number_of_stars) {
     $stars = "<div class='stars'>";
-    if($number_of_stars >= 0 && $number_of_stars <=5) {
-        for($i = 0; $i < $number_of_stars; $i++) {
+    if($number_of_stars >= 1 && $number_of_stars <=5) {
+        for($i = 1; $i <= $number_of_stars; $i++) {
             $stars .= "<div class='star closed'></div>";
         }
-        for($i = 0; $i < 5-$number_of_stars; $i++) {
+        for($i = 1; $i <= 5-$number_of_stars; $i++) {
             $stars .= "<div class='star'></div>";
         }
     } else {
-        $stars .= "No rating yet!";
+        $stars .= "No rating yet!<span class='material-icons'>face</span>";
     }
     $stars .= "</div>";
     return $stars;
@@ -48,7 +48,8 @@ function linkToMovie($id) {
 
 function show($dc) {
     $html = "";
-    $query = $dc['dbc']->prepare("select m.movie_id, title, year, picture, avg(rating) as avg_rating from movie m join rating r on m.movie_id = r.movie_id group by m.movie_id, title, year, picture");
+    $query = $dc['dbc']->prepare("select m.movie_id, title, year, picture, avg(rating) as avg_rating from movie m"
+        ." left join rating r on m.movie_id = r.movie_id group by m.movie_id, title, year, picture");
     $query->execute();
     $movies = $query->fetchAll(PDO::FETCH_ASSOC);
 
@@ -65,20 +66,36 @@ function show($dc) {
 
 function detail($dc) {
     $html = "";
-    $query = $dc['dbc']->prepare("select m.movie_id, title, year, picture, avg(rating) as avg_rating from movie"
-    ." m join rating r on m.movie_id = r.movie_id where m.movie_id = :movie_id"
+    $query = $dc['dbc']->prepare("select m.movie_id, title, year, picture, avg(rating) as avg_rating from movie m"
+    ." left join rating r on m.movie_id = r.movie_id where m.movie_id = :movie_id"
     ." group by m.movie_id, title, year, picture");
     $query->bindParam(':movie_id', $_GET['movie_id'], PDO::PARAM_INT);
     $query->execute();
     $movie = $query->fetch(PDO::FETCH_ASSOC);
 
-           $html.= "<p>".$movie['title']."</p>"
+    $query = $dc['dbc']->prepare("select rating from movie m"
+        ." join rating r on m.movie_id = r.movie_id"
+        ." join user u on r.user_id = u.user_id"
+        ." where m.movie_id = :movie_id");
+
+    $query->bindParam(':movie_id', $_GET['movie_id'], PDO::PARAM_INT);
+    $query->execute();
+    $your_rating = $query->fetch(PDO::FETCH_ASSOC);
+
+
+    $html.= "<p>".$movie['title']."</p>"
             ."<p>".$movie['year']."</p>"
-            ."<p>".makeStars(round($movie['avg_rating'], 0))."</p>"
-            ."<img src='".$dc['config']['images']."/".$movie['picture']."'>"
-            ."<p>".linkToMovie($movie['movie_id'])."</p>";
+            ."<p>Average rating: ".makeStars(round($movie['avg_rating'], 0))."</p>";
 
+    if(!$your_rating) {
+        $html .= "<p>You haven't rated this movie yet!</p>";
+        $form = include('form_stars.php');
+        $html .= $form("index.php", "post");
+    } else {
+        $html.= "This is your rating: ".makeStars($your_rating['rating']);
+    }
 
+    $html .="<img src='".$dc['config']['images']."/".$movie['picture']."'>";
     return $html;
 
 }
@@ -121,4 +138,8 @@ function logout() {
     unset($_SESSION);
     session_destroy();
     header('Location:  index.php?p=show');
+}
+
+function ratingForm() {
+    $form = include('form_stars.php');
 }
